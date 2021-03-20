@@ -9,11 +9,11 @@ tested against OpenEMR 5.0.1.6, is expected to be run from cron, and does
 not require integration with OpenEMR core.  A typical CRON job may look like:
 
 ```
-# We submit immunizattion records to CAIR every 4 hours
+# We submit immunization records to CAIR every 4 hours
 0 */4 * * * /usr/bin/php /home/dwilliams/openemr/openemr_cair_synch/sync.php --dbuser=openemr --dbpass=password --dbname=openemr --cairuser=user --cairpass=password --cairfacility=facility --cairregioncode=CAIRBA
 ```
 
-It is assumed that the VCX codes associated with the COVID-19 vaccines have been
+It is assumed that the [VCX codes associated with the COVID-19 vaccines](https://www.cdc.gov/vaccines/programs/iis/COVID-19-related-codes.html) have been
 entered into the OpenEMR codes table.  This script will only submit COVID-19
 vaccination records. This script will create an additional table in the OpenEMR
 database to track vaccination submissions to CAIR called immunizations_cair.
