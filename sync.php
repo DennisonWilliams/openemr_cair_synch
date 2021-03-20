@@ -275,7 +275,34 @@ foreach ($immunizations as $immunization) {
 	$hl7 .= '|';
 
 	// PID-10 Race
-	$hl7 .= '|';
+	// https://www.hl7.org/fhir/v3/Race/cs.html
+	// Submitting this field correclty is important for COVID-19 equity.
+	// <hl7_race_code>^<hl7_race_text>^HL7005
+	// OpenEMR ships with the <hl7_race_text> and <hl7_race_code> in the
+	// title and notes field of the list_options table
+
+	// The use of fields PID-10 (Race) and PID-22 (Ethnic Group) is forbidden in France.
+	// https://wiki.ihe.net/index.php/HL7_Tables
+
+	// There is no capacity for multiple races in the hl7 PID-10 format
+	// If we receive a race with multiple fields this section will fail
+	// and we will send a empty value for race.
+	if (!empty($patient['race'])) {
+		$race = DB::query(
+			'select title,notes '.
+			'from list_options '.
+			'where option_id = "'.  $patient['race'] .'" '.
+			'and list_id = "race"'
+		);
+		$race = array_pop($race);
+		if (!empty($race['title']) && !empty($race['notes'])) {
+			$hl7 .= $race['notes'] .'^'. $race['title'] .'^HL7005|';
+		} else {
+			$hl7 .= '|';
+		}
+	} else {
+		$hl7 .= '|';
+	}
 
 	// PID-11 Participant address
 	$hl7 .= '|';
@@ -296,7 +323,14 @@ foreach ($immunizations as $immunization) {
 	$hl7 .= '||||||';
 
 	// PID-22 ethnic group
-	$hl7 .= '|';
+	// This field is important for COVID-19 equity
+	if (!empty($patient['ethnicity']) && $patient['ethnicity'] === 'hisp_or_latin') {
+		// 2135-2 Hispanic or Latino
+		$hl7 .= '2135-2^Hispanic or Latino^CDCREC|';
+	} else {
+		// This is the same as sending not hispanic or latino
+		$hl7 .= '|';
+	}
 
 	// PID-23
 	$hl7 .= '|';
