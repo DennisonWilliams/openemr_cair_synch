@@ -194,7 +194,7 @@ foreach ($immunizations as $immunization) {
 	// Used to tie ack to message
 	$hl7 .= date('Ymdhms') . $immunization['patient_id'] . $immunization['cvx_code'] ."|";
 
-	$hl7 .= "|P|";
+	$hl7 .= "P|";
 
 	// MSH-12 version 2.5.1 only
 	$hl7 .= "2.5.1|||";
@@ -601,7 +601,7 @@ function record_result($hl7, $hl7ResponseString, $id) {
 	$hl7Response = new Message($hl7ResponseString);
 	$msa = $hl7Response->getSegmentsByName('MSA')[0];
 	$ackCode = $msa->getAcknowledgementCode();
-	if ($ackCode[1] === 'A') {
+	if ($ackCode && $ackCode[1] === 'A') {
 	    syslog(LOG_INFO, "Recieved ACK from remote");
 	}
 	else {
@@ -614,7 +614,7 @@ function record_result($hl7, $hl7ResponseString, $id) {
 		'immunization_id' => $id, 
 		'submission' => $hl7,
 		'response' => $hl7ResponseString, 
-		'ackcode' => $ackCode[1]
+		'ackcode' => $ackCode[1] ? $ackCode[1] : ''
 	]);
 }
 
